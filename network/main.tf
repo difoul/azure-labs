@@ -16,7 +16,11 @@ terraform {
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
   resource_provider_registrations = "none"
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
 
 data "azurerm_client_config" "current" {}
@@ -26,3 +30,12 @@ resource "random_integer" "ri" {
   min = 10000
   max = 99999
 }
+#
+# # Generate a random password for the VM admin users
+# resource "random_password" "example" {
+#   length  = 16
+#   special = true
+#   lower   = true
+#   upper   = true
+#   numeric = true
+# }

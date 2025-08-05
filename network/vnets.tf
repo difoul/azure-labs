@@ -124,17 +124,85 @@ resource "azurerm_subnet" "main_subnet-spoke-02" {
   address_prefixes     = ["10.2.0.0/24"]
 }
 
+resource "azurerm_subnet" "front_subnet-spoke-02" {
+  name                 = "front-spk-02"
+  resource_group_name  = azurerm_resource_group.spoke-02-rg.name
+  virtual_network_name = azurerm_virtual_network.spoke-02.name
+  address_prefixes     = ["10.2.1.0/24"]
+}
+
 
 resource "azurerm_network_security_group" "spoke-02-default-nsg" {
   name                = "spoke-02-default-nsg"
   location            = azurerm_resource_group.spoke-02-rg.location
   resource_group_name = azurerm_resource_group.spoke-02-rg.name
 
+  security_rule {
+    name                         = "http"
+    priority                     = 1000
+    direction                    = "Inbound"
+    access                       = "Allow"
+    protocol                     = "Tcp"
+    source_port_range            = "*"
+    destination_port_range       = "80"
+    source_address_prefixes      = ["10.1.0.0/24", "10.3.0.0/24"]
+    destination_address_prefixes = ["10.2.0.0/24"]
+  }
+
+  security_rule {
+    name                         = "allowLB"
+    priority                     = 1100
+    direction                    = "Inbound"
+    access                       = "Allow"
+    protocol                     = "Tcp"
+    source_port_range            = "*"
+    destination_port_range       = "80"
+    source_address_prefix        = "AzureLoadBalancer"
+    destination_address_prefixes = ["10.2.0.0/24"]
+  }
+
+
+  security_rule {
+    name                       = "DenyAll"
+    priority                   = 2000
+    direction                  = "Inbound"
+    access                     = "Deny"
+    protocol                   = "*"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+
+  #  {
+  #   - access                                     = "Allow"
+  #   - destination_address_prefix                 = "VirtualNetwork"
+  #   - destination_address_prefixes               = []
+  #   - destination_application_security_group_ids = []
+  #   - destination_port_range                     = "80"
+  #   - destination_port_ranges                    = []
+  #   - direction                                  = "Inbound"
+  #   - name                                       = "allowInternal"
+  #   - priority                                   = 1100
+  #   - protocol                                   = "Tcp"
+  #   - source_address_prefix                      = "AzureLoadBalancer"
+  #   - source_address_prefixes                    = []
+  #   - source_application_security_group_ids      = []
+  #   - source_port_range                          = "*"
+  #   - source_port_ranges                         = []
+  #     # (1 unchanged attribute hidden)
+  # }
   tags = var.tags
 }
 
 resource "azurerm_subnet_network_security_group_association" "main-to-default-spk02" {
   subnet_id                 = azurerm_subnet.main_subnet-spoke-02.id
+  network_security_group_id = azurerm_network_security_group.spoke-02-default-nsg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "fron-to-default-spk02" {
+  subnet_id                 = azurerm_subnet.front_subnet-spoke-02.id
   network_security_group_id = azurerm_network_security_group.spoke-02-default-nsg.id
 }
 # ###############################################

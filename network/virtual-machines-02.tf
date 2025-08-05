@@ -14,12 +14,12 @@ resource "azurerm_network_interface" "vm-spk-02-nic-02" {
 }
 
 resource "azurerm_linux_virtual_machine" "vm02-spk02" {
-  name                = "vm02spk02${var.product-name}" #Not allowed `\/"[]:|<>+=;,?*@&~!#$%^()_{}'`
-  location            = azurerm_resource_group.vms-rg.location
-  resource_group_name = azurerm_resource_group.vms-rg.name
-  size                = "Standard_B1s"
-  admin_username      = "adminuser"
-  admin_password      = "xxxxxxxxx"
+  name                            = "vm02spk02${var.product-name}" #Not allowed `\/"[]:|<>+=;,?*@&~!#$%^()_{}'`
+  location                        = azurerm_resource_group.vms-rg.location
+  resource_group_name             = azurerm_resource_group.vms-rg.name
+  size                            = "Standard_B1s"
+  admin_username                  = "adminuser"
+  admin_password                  = "xxxxxxxxx"
   disable_password_authentication = false
 
   network_interface_ids = [
