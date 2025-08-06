@@ -44,8 +44,15 @@ resource "azurerm_lb_rule" "lb-rule-80" {
 #
 # }
 
-resource "azurerm_network_interface_backend_address_pool_association" "vm02-nic" {
+resource "azurerm_network_interface_backend_address_pool_association" "vm02-nic02" {
   network_interface_id    = azurerm_network_interface.vm-spk-02-nic-02.id
   backend_address_pool_id = azurerm_lb_backend_address_pool.address-pool.id
   ip_configuration_name   = azurerm_network_interface.vm-spk-02-nic-02.ip_configuration[0].name
+}
+
+
+resource "azurerm_network_interface_backend_address_pool_association" "vm02-nic01" {
+  network_interface_id    = azurerm_network_interface.vm-spk-02-nic-01.id
+  backend_address_pool_id = azurerm_lb_backend_address_pool.address-pool.id
+  ip_configuration_name   = azurerm_network_interface.vm-spk-02-nic-01.ip_configuration[0].name
 }

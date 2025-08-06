@@ -19,7 +19,7 @@
 #   resource_group_name = azurerm_resource_group.vms-rg.name
 #   size                = "Standard_B1s"
 #   admin_username      = "adminuser"
-#   admin_password      = "xxxxxx"
+#   admin_password      = var.pwd  # random_password.pwd.result
 #   disable_password_authentication = false
 #
 #   network_interface_ids = [

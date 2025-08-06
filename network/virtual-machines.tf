@@ -19,7 +19,7 @@ resource "azurerm_linux_virtual_machine" "vm01-spk01" {
   resource_group_name             = azurerm_resource_group.vms-rg.name
   size                            = "Standard_B1s"
   admin_username                  = "adminuser"
-  admin_password                  = "xxxxxxxxx"
+  admin_password                  = var.pwd # random_password.pwd.result
   disable_password_authentication = false
 
   network_interface_ids = [

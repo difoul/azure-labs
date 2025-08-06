@@ -42,3 +42,18 @@ resource "azurerm_virtual_network_peering" "spoke-03_to_hub" {
   remote_virtual_network_id = azurerm_virtual_network.hub.id
   allow_forwarded_traffic   = true
 }
+
+resource "azurerm_virtual_network_peering" "hub_to_shared-services" {
+  name                      = "hub_to_shared-services"
+  resource_group_name       = azurerm_resource_group.hub-rg.name
+  virtual_network_name      = azurerm_virtual_network.hub.name
+  remote_virtual_network_id = azurerm_virtual_network.shared-services.id
+}
+
+resource "azurerm_virtual_network_peering" "shared-services_to_hub" {
+  name                      = "shared-services_to_hub"
+  resource_group_name       = azurerm_resource_group.shared-services-rg.name
+  virtual_network_name      = azurerm_virtual_network.shared-services.name
+  remote_virtual_network_id = azurerm_virtual_network.hub.id
+  allow_forwarded_traffic   = true
+}

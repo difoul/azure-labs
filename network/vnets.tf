@@ -132,8 +132,40 @@ resource "azurerm_subnet" "front_subnet-spoke-02" {
 }
 
 
-resource "azurerm_network_security_group" "spoke-02-default-nsg" {
-  name                = "spoke-02-default-nsg"
+resource "azurerm_subnet" "inbound-edpt-spoke-02" {
+  name                 = "inbound-edpt"
+  resource_group_name  = azurerm_resource_group.spoke-02-rg.name
+  virtual_network_name = azurerm_virtual_network.spoke-02.name
+  address_prefixes     = ["10.2.2.0/24"]
+
+  delegation {
+    name = "Microsoft.Network.dnsResolvers"
+    service_delegation {
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      name    = "Microsoft.Network/dnsResolvers"
+    }
+  }
+}
+
+resource "azurerm_subnet" "outbound-edpt-spoke-02" {
+  name                 = "outbound-edpt"
+  resource_group_name  = azurerm_resource_group.spoke-02-rg.name
+  virtual_network_name = azurerm_virtual_network.spoke-02.name
+  address_prefixes     = ["10.2.3.0/24"]
+
+  delegation {
+    name = "Microsoft.Network.dnsResolvers"
+    service_delegation {
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      name    = "Microsoft.Network/dnsResolvers"
+    }
+  }
+
+}
+
+
+resource "azurerm_network_security_group" "spoke-02-app-nsg" {
+  name                = "spoke-02-app-nsg"
   location            = azurerm_resource_group.spoke-02-rg.location
   resource_group_name = azurerm_resource_group.spoke-02-rg.name
 
@@ -196,15 +228,40 @@ resource "azurerm_network_security_group" "spoke-02-default-nsg" {
   tags = var.tags
 }
 
-resource "azurerm_subnet_network_security_group_association" "main-to-default-spk02" {
+
+resource "azurerm_network_security_group" "spoke-02-default-nsg" {
+  name                = "spoke-02-default-nsg"
+  location            = azurerm_resource_group.spoke-02-rg.location
+  resource_group_name = azurerm_resource_group.spoke-02-rg.name
+
+  tags = var.tags
+}
+
+resource "azurerm_subnet_network_security_group_association" "main-to-app-spk02" {
   subnet_id                 = azurerm_subnet.main_subnet-spoke-02.id
+  network_security_group_id = azurerm_network_security_group.spoke-02-app-nsg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "front-to-app-spk02" {
+  subnet_id                 = azurerm_subnet.front_subnet-spoke-02.id
+  network_security_group_id = azurerm_network_security_group.spoke-02-app-nsg.id
+}
+
+
+
+resource "azurerm_subnet_network_security_group_association" "outbound-edpt-to-default-spk02" {
+  subnet_id                 = azurerm_subnet.outbound-edpt-spoke-02.id
   network_security_group_id = azurerm_network_security_group.spoke-02-default-nsg.id
 }
 
-resource "azurerm_subnet_network_security_group_association" "fron-to-default-spk02" {
-  subnet_id                 = azurerm_subnet.front_subnet-spoke-02.id
+
+
+resource "azurerm_subnet_network_security_group_association" "inbound-edpt-to-default-spk02" {
+  subnet_id                 = azurerm_subnet.inbound-edpt-spoke-02.id
   network_security_group_id = azurerm_network_security_group.spoke-02-default-nsg.id
 }
+
+
 # ###############################################
 #
 #       Spoke 03
@@ -227,7 +284,6 @@ resource "azurerm_subnet" "main_subnet-spoke-03" {
 }
 
 
-
 resource "azurerm_network_security_group" "spoke-03-default-nsg" {
   name                = "spoke-03-default-nsg"
   location            = azurerm_resource_group.spoke-03-rg.location
@@ -241,3 +297,88 @@ resource "azurerm_subnet_network_security_group_association" "main-to-default-sp
   network_security_group_id = azurerm_network_security_group.spoke-03-default-nsg.id
 }
 
+
+# ###############################################
+#
+#       Shared-services
+#
+#################################################
+resource "azurerm_virtual_network" "shared-services" {
+  name                = "shared-services-${var.product-name}"
+  address_space       = ["10.10.0.0/16"]
+  location            = azurerm_resource_group.shared-services-rg.location
+  resource_group_name = azurerm_resource_group.shared-services-rg.name
+
+  tags = var.tags
+}
+
+resource "azurerm_subnet" "inbound-edpt-shared-services" {
+  name                 = "inbound-edpt"
+  resource_group_name  = azurerm_resource_group.shared-services-rg.name
+  virtual_network_name = azurerm_virtual_network.shared-services.name
+  address_prefixes     = ["10.10.0.0/24"]
+
+  delegation {
+    name = "Microsoft.Network.dnsResolvers"
+    service_delegation {
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      name    = "Microsoft.Network/dnsResolvers"
+    }
+  }
+}
+
+resource "azurerm_subnet" "outbound-edpt-shared-services" {
+  name                 = "outbound-edpt"
+  resource_group_name  = azurerm_resource_group.shared-services-rg.name
+  virtual_network_name = azurerm_virtual_network.shared-services.name
+  address_prefixes     = ["10.10.1.0/24"]
+
+  delegation {
+    name = "Microsoft.Network.dnsResolvers"
+    service_delegation {
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+      name    = "Microsoft.Network/dnsResolvers"
+    }
+  }
+
+}
+
+# resource "azurerm_subnet" "bastion-shared-services" {
+#   name                 = "AzureBastionSubnet"
+#   resource_group_name  = azurerm_resource_group.shared-services-rg.name
+#   virtual_network_name = azurerm_virtual_network.shared-services.name
+#   address_prefixes     = ["10.10.2.0/24"]
+# }
+
+
+# resource "azurerm_subnet" "bastion-spoke-01" {
+#   name                 = "AzureBastionSubnet"
+#   resource_group_name  = azurerm_resource_group.spoke-01-rg.name
+#   virtual_network_name = azurerm_virtual_network.spoke-01.name
+#   address_prefixes     = ["10.1.3.0/24"]
+# }
+
+
+resource "azurerm_network_security_group" "shared-services-default-nsg" {
+  name                = "shared-services-default-nsg"
+  location            = azurerm_resource_group.shared-services-rg.location
+  resource_group_name = azurerm_resource_group.shared-services-rg.name
+
+  tags = var.tags
+}
+
+resource "azurerm_subnet_network_security_group_association" "main-to-default-shared-services" {
+  subnet_id                 = azurerm_subnet.inbound-edpt-shared-services.id
+  network_security_group_id = azurerm_network_security_group.shared-services-default-nsg.id
+}
+
+
+resource "azurerm_subnet_network_security_group_association" "outbound-edpt-to-default-shared-services" {
+  subnet_id                 = azurerm_subnet.outbound-edpt-shared-services.id
+  network_security_group_id = azurerm_network_security_group.shared-services-default-nsg.id
+}
+
+# resource "azurerm_subnet_network_security_group_association" "bastion-to-default-shared-services" {
+#   subnet_id                 = azurerm_subnet.bastion-shared-services.id
+#   network_security_group_id = azurerm_network_security_group.shared-services-default-nsg.id
+# }

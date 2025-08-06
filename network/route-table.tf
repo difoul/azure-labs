@@ -6,7 +6,7 @@ resource "azurerm_route_table" "to-hub-rt" {
 
   route {
     name                   = "to-hub"
-    address_prefix         = "10.0.0.0/8" # "10.0.0.0/8"
+    address_prefix         = "0.0.0.0/0" # "10.0.0.0/8"
     next_hop_type          = "VirtualAppliance"
     next_hop_in_ip_address = azurerm_firewall.firewall.ip_configuration[0].private_ip_address
   }
@@ -65,7 +65,36 @@ resource "azurerm_subnet_route_table_association" "front_subnet-spoke-02-rta" {
 }
 
 
+resource "azurerm_subnet_route_table_association" "inbound-edpt-spoke-02-rta" {
+  subnet_id      = azurerm_subnet.inbound-edpt-spoke-02.id
+  route_table_id = azurerm_route_table.to-hub-rt.id
+}
+
+
+resource "azurerm_subnet_route_table_association" "outbound-edpt-spoke-02-rta" {
+  subnet_id      = azurerm_subnet.outbound-edpt-spoke-02.id
+  route_table_id = azurerm_route_table.to-hub-rt.id
+}
+
+
 resource "azurerm_subnet_route_table_association" "main_subnet-spoke-03-rta" {
   subnet_id      = azurerm_subnet.main_subnet-spoke-03.id
   route_table_id = azurerm_route_table.to-hub-rt.id
 }
+
+resource "azurerm_subnet_route_table_association" "main_subnet-shared-services-rta" {
+  subnet_id      = azurerm_subnet.inbound-edpt-shared-services.id
+  route_table_id = azurerm_route_table.to-hub-rt.id
+}
+
+
+resource "azurerm_subnet_route_table_association" "outbound-edpt-shared-services-rta" {
+  subnet_id      = azurerm_subnet.outbound-edpt-shared-services.id
+  route_table_id = azurerm_route_table.to-hub-rt.id
+}
+
+#
+# resource "azurerm_subnet_route_table_association" "bastion-shared-services-rta" {
+#   subnet_id      = azurerm_subnet.bastion-shared-services.id
+#   route_table_id = azurerm_route_table.to-hub-rt.id
+# }

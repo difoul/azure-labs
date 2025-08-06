@@ -30,12 +30,12 @@ resource "random_integer" "ri" {
   min = 10000
   max = 99999
 }
-#
-# # Generate a random password for the VM admin users
-# resource "random_password" "example" {
-#   length  = 16
-#   special = true
-#   lower   = true
-#   upper   = true
-#   numeric = true
-# }
+
+# Generate a random password for the VM admin users
+resource "random_password" "pwd" {
+  length  = 16
+  special = true
+  lower   = true
+  upper   = true
+  numeric = true
+}

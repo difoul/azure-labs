@@ -51,3 +51,9 @@ resource "azurerm_resource_group" "network-watcher-rg" {
   name     = "network-watcher-${var.product-name}-rg"
   tags     = var.tags
 }
+
+resource "azurerm_resource_group" "shared-services-rg" {
+  location = var.location
+  name     = "shared-services-${var.product-name}-rg"
+  tags     = var.tags
+}
